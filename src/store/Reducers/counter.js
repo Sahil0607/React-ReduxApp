@@ -21,7 +21,6 @@ const CounterReducer = (state = initialState, action) => {
             return updateObject(state, {counter: state.counter - action.value});
         default:
             return state
-            // break;
     }
 }
 

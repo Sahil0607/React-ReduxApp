@@ -4,12 +4,14 @@ import CounterControl from '../../components/CounterControl/CounterControl';
 import CounterOutput from '../../components/CounterOutput/CounterOutput';
 import './Counter.css';
 import * as actionCreator from '../../store/Actions/index';
+import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
 class Counter extends Component {
     state = {
         counter: 0,
         name: '',
-        age: 0
+        age: 0,
+        showMessage: false
     }
 
     counterChangeHandler = (action, value) => {
@@ -39,7 +41,25 @@ class Counter extends Component {
         this.setState({age: event.target.value})
     }
 
+    onResultHandler = (ctr) => {
+        this.props.onSaveResult(ctr);
+        this.setState({showMessage: true})
+    }
+
     render() {
+        const result = this.props.storedResults.map(result => {
+            return(
+                <li key={result.id} className="SaveResult"  onClick={() => this.props.onDeleteResult(result.id)}>{result.val}</li>
+            )
+        });
+        const randomAge = this.props.randomAge.map(myAge => {
+            return(
+                <li className="SaveResult" key={myAge.id} onClick={() => this.props.onDeleteAge(myAge.id)}>
+                <p> {myAge.name} </p>
+                <p> {myAge.age} </p>
+                </li>
+            )
+        })
         return (
             <div className="Main">
                 <CounterOutput value={this.props.ctr}/>
@@ -47,7 +67,7 @@ class Counter extends Component {
                 <CounterControl label="Decrement" clicked={this.props.onDecreamentCounter}/>
                 <CounterControl label="Add 5" clicked={() => this.props.onAddCounter(5)}/>
                 <CounterControl label="Subtract 5" clicked={() => this.props.onSubtractCounter(5)}/>
-                <button className="SaveButton" onClick={() => this.props.onSaveResult(this.props.ctr)}>Save Result</button>
+                <button className="SaveButton" onClick={() => this.onResultHandler(this.props.ctr)}>Save Result</button>
                 <br/>
                 <input className="InputClass" onChange={this.nameChangeHandler} type="text" value={this.state.name} placeholder="Enter Name" />
                 <input className="InputClass" onChange={this.ageChangeHandler} type="number" value={this.state.age} placeholder="Enter Age" />
@@ -55,23 +75,19 @@ class Counter extends Component {
                 <button className="SaveButton" onClick={this.props.onRandomAge}>Async RandomAge</button>
                 <hr/>
                 <ul>
-                    {this.props.storedResults.map(result => {
-                        return(
-                            <li className="SaveResult" key={result.id} onClick={() => this.props.onDeleteResult(result.id)}>{result.val}</li>
-                        )
-                    })}
+                    <ReactCSSTransitionGroup key={result.id} transitionName="example"
+                    transitionEnterTimeout={500}
+                    transitionLeaveTimeout={300}>
+                        {result}
+                    </ReactCSSTransitionGroup>
                 </ul>
                 <ul>
-                    {this.props.randomAge.map(myAge => {
-                        return(
-                            <li className="SaveResult" key={myAge.id} onClick={() => this.props.onDeleteAge(myAge.id)}>
-                               <p> {myAge.name} </p>
-                               <p> {myAge.age} </p>
-                            </li>
-                        )
-                    })}
+                <ReactCSSTransitionGroup key={result.id} transitionName="example"
+                    transitionEnterTimeout={500}
+                    transitionLeaveTimeout={300}>
+                        {randomAge}
+                    </ReactCSSTransitionGroup>
                 </ul>
-                
             </div>
         )
     }
