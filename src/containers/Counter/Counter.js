@@ -1,179 +1,122 @@
-import React, { Component } from "react";
-import { connect } from "react-redux";
+import React, { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import CounterControl from "../../components/CounterControl/CounterControl";
 import CounterOutput from "../../components/CounterOutput/CounterOutput";
 import "./Counter.css";
 import * as actionCreator from "../../store/Actions/index";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
+const Counter = () => {
+  const [name, setName] = useState("");
+  const [age, setAge] = useState(0);
 
-class Counter extends Component {
-  state = {
-    counter: 0,
-    name: "",
-    age: 0,
-    showMessage: false,
+  const ctr = useSelector((state) => state.CounterReducer.counter);
+  const storedResults = useSelector((state) => state.ResultReducer.results);
+  const randomAge = useSelector((state) => state.RandomAgeReducer.myInfo);
+  const dispatch = useDispatch();
+
+  const onResultHandler = (value) => {
+    dispatch(actionCreator.saveResult(value));
   };
 
-  counterChangeHandler = (action, value) => {
-    switch (action.type) {
-      case "inc":
-        this.setState((prevState) => prevState.counter + 1);
-        break;
-      case "dec":
-        this.setState((prevState) => prevState.counter - 1);
-        break;
-      case "add":
-        this.setState((prevState) => prevState.counter + value);
-        break;
-      case "sub":
-        this.setState((prevState) => prevState.counter - value);
-        break;
-      default:
-        break;
-    }
-  };
+  const result = storedResults.map((res) => (
+    <li
+      key={res.id}
+      className="SaveResult"
+      onClick={() => dispatch(actionCreator.deleteResult(res.id))}
+    >
+      {res.val}
+    </li>
+  ));
 
-  nameChangeHandler = (event) => {
-    this.setState({ name: event.target.value });
-  };
+  const randomAgeList = randomAge.map((myAge) => (
+    <li
+      className="SaveResult"
+      key={myAge.id}
+      onClick={() => dispatch(actionCreator.deleteAge(myAge.id))}
+    >
+      <p> {myAge.name} </p>
+      <p> {myAge.age} </p>
+    </li>
+  ));
 
-  ageChangeHandler = (event) => {
-    this.setState({ age: event.target.value });
-  };
-
-  onResultHandler = (ctr) => {
-    this.props.onSaveResult(ctr);
-    this.setState({ showMessage: true });
-  };
-
-  render() {
-    const result = this.props.storedResults.map((result) => {
-      return (
-        <li
-          key={result.id}
-          className="SaveResult"
-          onClick={() => this.props.onDeleteResult(result.id)}
-        >
-          {result.val}
-        </li>
-      );
-    });
-    const randomAge = this.props.randomAge.map((myAge) => {
-      return (
-        <li
-          className="SaveResult"
-          key={myAge.id}
-          onClick={() => this.props.onDeleteAge(myAge.id)}
-        >
-          <p> {myAge.name} </p>
-          <p> {myAge.age} </p>
-        </li>
-      );
-    });
-    return (
-      <div className="Main">
-        <CounterOutput value={this.props.ctr} />
-        <CounterControl
-          label="Increment"
-          clicked={this.props.onIncreamentCounter}
-        />
-        <CounterControl
-          label="Decrement"
-          clicked={this.props.onDecreamentCounter}
-        />
-        <CounterControl
-          label="Add 5"
-          clicked={() => this.props.onAddCounter(5)}
-        />
-        <CounterControl
-          label="Subtract 5"
-          clicked={() => this.props.onSubtractCounter(5)}
-        />
-        <button
-          className="SaveButton"
-          onClick={() => this.onResultHandler(this.props.ctr)}
-        >
-          Save Result
-        </button>
-        <br />
-        <input
-          className="InputClass"
-          onChange={this.nameChangeHandler}
-          type="text"
-          value={this.state.name}
-          placeholder="Enter Name"
-        />
-        <input
-          className="InputClass"
-          onChange={this.ageChangeHandler}
-          type="number"
-          value={this.state.age}
-          placeholder="Enter Age"
-        />
-        <button
-          className="SaveButton"
-          onClick={() =>
-            this.props.onSubmitFormValue(this.state.name, this.state.age)
-          }
-        >
-          Submit
-        </button>
-        <button className="SaveButton" onClick={this.props.onRandomAge}>
-          Async RandomAge
-        </button>
-        <hr />
-        <ul>
-          <TransitionGroup className="example">
-            {result.map((item) => (
-              <CSSTransition
-                key={item.key || item.props.key}
-                timeout={{ enter: 500, exit: 300 }}
-                classNames="example"
-              >
-                {item}
-              </CSSTransition>
-            ))}
-          </TransitionGroup>
-        </ul>
-        <ul>
-          <TransitionGroup className="example">
-            {randomAge.map((item) => (
-              <CSSTransition
-                key={item.key || item.props.key}
-                timeout={{ enter: 500, exit: 300 }}
-                classNames="example"
-              >
-                {item}
-              </CSSTransition>
-            ))}
-          </TransitionGroup>
-        </ul>
-      </div>
-    );
-  }
-}
-
-const mapStateToProps = (state) => {
-  return {
-    ctr: state.CounterReducer.counter,
-    storedResults: state.ResultReducer.results,
-    randomAge: state.RandomAgeReducer.myInfo,
-  };
+  return (
+    <div className="Main">
+      <CounterOutput value={ctr} />
+      <CounterControl
+        label="Increment"
+        clicked={() => dispatch(actionCreator.increament())}
+      />
+      <CounterControl
+        label="Decrement"
+        clicked={() => dispatch(actionCreator.decrement())}
+      />
+      <CounterControl
+        label="Add 5"
+        clicked={() => dispatch(actionCreator.add(5))}
+      />
+      <CounterControl
+        label="Subtract 5"
+        clicked={() => dispatch(actionCreator.subtract(5))}
+      />
+      <button className="SaveButton" onClick={() => onResultHandler(ctr)}>
+        Save Result
+      </button>
+      <br />
+      <input
+        className="InputClass"
+        onChange={(e) => setName(e.target.value)}
+        type="text"
+        value={name}
+        placeholder="Enter Name"
+      />
+      <input
+        className="InputClass"
+        onChange={(e) => setAge(e.target.value)}
+        type="number"
+        value={age}
+        placeholder="Enter Age"
+      />
+      <button
+        className="SaveButton"
+        onClick={() => dispatch(actionCreator.submitForm(name, age))}
+      >
+        Submit
+      </button>
+      <button
+        className="SaveButton"
+        onClick={() => dispatch(actionCreator.randomAge())}
+      >
+        Async RandomAge
+      </button>
+      <hr />
+      <ul>
+        <TransitionGroup className="example">
+          {result.map((item) => (
+            <CSSTransition
+              key={item.key || item.props.key}
+              timeout={{ enter: 500, exit: 300 }}
+              classNames="example"
+            >
+              {item}
+            </CSSTransition>
+          ))}
+        </TransitionGroup>
+      </ul>
+      <ul>
+        <TransitionGroup className="example">
+          {randomAgeList.map((item) => (
+            <CSSTransition
+              key={item.key || item.props.key}
+              timeout={{ enter: 500, exit: 300 }}
+              classNames="example"
+            >
+              {item}
+            </CSSTransition>
+          ))}
+        </TransitionGroup>
+      </ul>
+    </div>
+  );
 };
 
-const mapDispatchToProps = (dispatch) => {
-  return {
-    onIncreamentCounter: () => dispatch(actionCreator.increament()),
-    onDecreamentCounter: () => dispatch(actionCreator.decrement()),
-    onAddCounter: (value) => dispatch(actionCreator.add(value)),
-    onSubtractCounter: (value) => dispatch(actionCreator.subtract(value)),
-    onSaveResult: (value) => dispatch(actionCreator.saveResult(value)),
-    onDeleteResult: (id) => dispatch(actionCreator.deleteResult(id)),
-    onRandomAge: () => dispatch(actionCreator.randomAge()),
-    onDeleteAge: (id) => dispatch(actionCreator.deleteAge(id)),
-    onSubmitFormValue: (name, age) =>
-      dispatch(actionCreator.submitForm(name, age)),
-  };
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(Counter);
+export default Counter;
